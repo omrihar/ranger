@@ -105,6 +105,13 @@ class Vcs(object):
     def get_root(self, path):
         """Finds the repository root path. Otherwise returns none"""
         curpath = os.path.abspath(path)
+        devnull = open("/dev/null", "w")
+        try:
+            raw = subprocess.check_output(['git', 'rev-parse', '--show-toplevel'],
+                                              cwd=os.path.dirname(curpath), stderr=devnull)
+            return raw.decode('utf-8', errors="ignore").strip()
+        except subprocess.CalledProcessError:
+            pass
         while curpath != '/':
             if self.get_repo_type(curpath): return curpath
             else:                           curpath = os.path.dirname(curpath)
